@@ -1,15 +1,16 @@
 import './style.css';
 
-import { Point } from 'pixi.js';
-
 import { Game } from './core/Game';
 import { Scene } from './actor/Scene';
-import { TextureComp } from './component/TextureComp';
-import { SpringWaterComp } from './component/SpringWaterComp';
+import { SceneLoader } from './core/SceneLoader';
+import { registerAllTypes } from './core/RegisterTypes';
 
 
 async function main() 
 {
+    // 1. 注册所有类型（必须在加载场景之前）
+    registerAllTypes();
+
     // 创建游戏实例
     const game = new Game();
 
@@ -20,11 +21,8 @@ async function main()
 
     await game.init(container);
 
-    const scene = new Scene(game.mWidth, game.mHeight);
-    const bgTextureComp = new TextureComp('/map.png', new Point(game.mWidth, game.mHeight), new Point(0, 0));
-    const springWaterComp = new SpringWaterComp(new Point(150, 150), new Point(50, 1100));
-    scene.addComponent(bgTextureComp);
-    scene.addComponent(springWaterComp);
+    // 从JSON加载场景
+    const scene = await SceneLoader.loadFromFile('/scenes/main_scene.json') as Scene;
 
     // 加载游戏场景
     game.loadScene(scene);

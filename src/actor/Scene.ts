@@ -1,16 +1,16 @@
 import { Actor } from '../core/Actor';
-import { Game } from '../core/Game';
 
 export class Scene extends Actor 
 {
-    readonly mWidth: number;
-    readonly mHeight: number;
+    mWidth: number = 720;
+    mHeight: number = 1280;
 
-    constructor(width: number, height: number) 
+    override initFromData(properties: Record<string, any>): void 
     {
-        super();
-        this.mWidth = width;
-        this.mHeight = height;
+        super.initFromData(properties);
+        
+        this.mWidth = properties.width;
+        this.mHeight = properties.height;
     }
 }
 

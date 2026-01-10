@@ -1,8 +1,9 @@
 import { Container } from 'pixi.js';
 import { Component } from './Component';
 
-export abstract class Actor 
+export class Actor 
 {
+    protected mName: string = ''; 
     protected mParent : Actor | null = null;
     protected mChildren : Set<Actor> = new Set();
     protected mComponents : Set<Component> = new Set();
@@ -19,6 +20,7 @@ export abstract class Actor
         if(this.mParent)
             this._detach();
         this.mParent = parent;
+        parent.container.addChild(this.mContainer);
         this.onAttach();
     }
 
@@ -27,6 +29,7 @@ export abstract class Actor
         if(this.mParent)
         {
             this.onDetach();
+            this.mContainer.removeFromParent();
             this.mParent = null;
         }
     }
@@ -39,6 +42,11 @@ export abstract class Actor
 
         for(const child of this.mChildren)
             child._update(dt);
+    }
+
+    initFromData(properties: Record<string, any>): void 
+    {
+        this.mName = properties.name;
     }
 
     protected onAttach(): void {}

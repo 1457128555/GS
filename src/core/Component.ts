@@ -2,6 +2,8 @@ import type { Actor } from './Actor';
 
 export abstract class Component 
 {
+    protected mName: string = ''; 
+
     protected mParent : Actor | null = null;
 
     get parent(): Actor | null 
@@ -30,6 +32,11 @@ export abstract class Component
     _update(dt: number): void 
     {
         this.onUpdate(dt);
+    }
+
+    initFromData(properties: Record<string, any>): void
+    {
+        this.mName = properties.name;
     }
 
     protected onAttach(): void {}

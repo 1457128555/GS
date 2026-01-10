@@ -4,26 +4,42 @@ import { Component } from '../core/Component';
 
 export class TextureComp extends Component 
 {
-    private mSprite: Sprite;
+    protected mPath: string = '';
+    protected mSize: Point = new Point(0, 0);
+    protected mPosition: Point = new Point(0, 0);
 
-    constructor(path: string, size: Point, pos: Point)
-    {
-        super();
-
-        this.mSprite = new Sprite(AssetManager.Instance().getTexture(path));
-
-        this.mSprite.width = size.x;
-        this.mSprite.height = size.y;
-        this.mSprite.position.set(pos.x, pos.y);
-    }
+    protected mSprite?: Sprite;
 
     protected onAttach()
     {
-        this.parent?.container.addChild(this.mSprite);
+        this.initSprite();
+        this.parent?.container.addChild(this.mSprite!);
     }
 
     protected onDetach(): void
     {
-        this.mSprite.removeFromParent();
+        this.mSprite?.removeFromParent();
+    }
+
+    override initFromData(properties: Record<string, any>): void 
+    {
+        super.initFromData(properties);
+
+        this.mPath = properties.path;
+        this.mSize = new Point(properties.size.x, properties.size.y);
+        this.mPosition = new Point(properties.position.x, properties.position.y);
+    }
+
+    /**
+     * 初始化Sprite（延迟初始化）
+     */
+    protected initSprite(): void 
+    {
+        if (this.mSprite) return;
+        
+        this.mSprite = new Sprite(AssetManager.Instance().getTexture(this.mPath));
+        this.mSprite.width = this.mSize.x;
+        this.mSprite.height = this.mSize.y;
+        this.mSprite.position.set(this.mPosition.x, this.mPosition.y);
     }
 }

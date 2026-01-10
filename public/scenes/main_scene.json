@@ -1,0 +1,51 @@
+{
+    "type": "Scene",
+    "properties": {
+        "name": "GameScene",
+        "width": 720,
+        "height": 1280
+    },
+    "components": [{
+        "name": "Background",
+        "type": "TextureComp",
+        "properties": {
+            "path": "/map.png",
+            "size": { "x": 720, "y": 1280 },
+            "position": { "x": 0, "y": 0 }
+        }
+    }],
+    "children": [{
+        "type": "Actor",          
+        "properties": {           
+            "name": "SpringWater_0"
+        },
+        "components": [
+            {
+                "name": "SpringWaterRender",
+                "type": "TextureComp",
+                "properties": {
+                    "path": "/spring_water.png",
+                    "size": { "x": 130, "y": 130 },
+                    "position": { "x": 295, "y": 0 }
+                }
+            }
+        ],    
+        "children": []        
+    },
+    {
+        "type": "Actor",          
+        "properties": {           
+            "name": "SpringWater_1"
+        },
+        "components": [{
+            "name": "SpringWaterRender",
+            "type": "TextureComp",
+            "properties": {
+                "path": "/spring_water.png",
+                "size": { "x": 130, "y": 130 },
+                "position": { "x": 295, "y": 1180 }
+            }
+        }],    
+        "children": []        
+    }]
+}

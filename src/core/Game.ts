@@ -19,11 +19,6 @@ export class Game
     async init(container: HTMLElement): Promise<void> 
     {
         this.mContainer = container;
-       
-        await AssetManager.Instance().load(new Set([
-            '/map.png',
-            '/spring_water.png'
-        ]));
 
         await this.mApp.init({
             width: this.mWidth,
