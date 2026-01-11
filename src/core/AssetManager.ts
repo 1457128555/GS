@@ -19,10 +19,19 @@ export class AssetManager
 
         for (const path of paths) 
         {
-            const texture = await Assets.load(path);
-            this.mTexResMap.set(path, texture); 
-            loaded++;
-            onProgress?.(loaded / total);
+            try 
+            {
+                const texture = await Assets.load(path);
+                this.mTexResMap.set(path, texture); 
+                loaded++;
+                onProgress?.(loaded / total);
+            }
+            catch (error) 
+            {
+                console.error(`[AssetManager] ❌ Failed to load: ${path}`);
+                console.error(error);
+                throw new Error(`Failed to load asset: ${path}`);
+            }
         }
     }
     

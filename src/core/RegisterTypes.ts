@@ -11,7 +11,7 @@ import { Scene } from '../actor/Scene';
 
 // Component类型
 import { TextureComp } from '../component/TextureComp';
-import { SpringWaterComp } from '../component/SpringWaterComp';
+import { AnimationComp } from '../component/AnimationComp';
 
 export function registerAllTypes(): void 
 {
@@ -21,7 +21,7 @@ export function registerAllTypes(): void
     
     // 注册Component类型
     TypeRegistry.registerComponent('TextureComp', TextureComp);
-    TypeRegistry.registerComponent('SpringWaterComp', SpringWaterComp);
+    TypeRegistry.registerComponent('AnimationComp', AnimationComp);
     
     console.log('All types registered successfully!');
 }

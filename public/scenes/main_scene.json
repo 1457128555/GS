@@ -9,7 +9,7 @@
         "name": "Background",
         "type": "TextureComp",
         "properties": {
-            "path": "/map.png",
+            "path": "/texture/main_map/main_map.png",
             "size": { "x": 720, "y": 1280 },
             "position": { "x": 0, "y": 0 }
         }
@@ -22,10 +22,12 @@
         "components": [
             {
                 "name": "SpringWaterRender",
-                "type": "TextureComp",
+                "type": "AnimationComp",
                 "properties": {
-                    "path": "/spring_water.png",
-                    "size": { "x": 130, "y": 130 },
+                    "path": "/texture/spring_water/spring_water_sheet.png",
+                    "frameCount": 15,
+                    "animationSpeed": 0.15,
+                    "size": { "x": 100, "y": 100 },
                     "position": { "x": 295, "y": 0 }
                 }
             }
@@ -39,13 +41,51 @@
         },
         "components": [{
             "name": "SpringWaterRender",
-            "type": "TextureComp",
+            "type": "AnimationComp",
             "properties": {
-                "path": "/spring_water.png",
-                "size": { "x": 130, "y": 130 },
+                "path": "/texture/spring_water/spring_water_sheet.png",
+                "frameCount": 15,
+                "animationSpeed": 0.15,
+                "size": { "x": 100, "y": 100 },
                 "position": { "x": 295, "y": 1180 }
             }
         }],    
-        "children": []        
+        "children": []     
+    },
+    {
+        "type": "Actor",          
+        "properties": {           
+            "name": "Reborn_Stone_0"
+        },
+        "components": [{
+            "name": "RebornStoneRender",
+            "type": "TextureComp",
+            "properties": {
+                "path": "/texture/reborn_stone/reborn_stone.png",
+                "frameCount": 15,
+                "animationSpeed": 0.15,
+                "size": { "x": 200, "y": 200 },
+                "position": { "x": -50, "y": 600 }
+            }
+        }],    
+        "children": []     
+    },
+    {
+        "type": "Actor",          
+        "properties": {           
+            "name": "Reborn_Stone_0"
+        },
+        "components": [{
+            "name": "RebornStoneRender",
+            "type": "TextureComp",
+            "properties": {
+                "path": "/texture/reborn_stone/reborn_stone.png",
+                "frameCount": 15,
+                "animationSpeed": 0.15,
+                "size": { "x": 200, "y": 200 },
+                "position": { "x": 570, "y": 600 }
+            }
+        }],    
+        "children": []     
     }]
 }
