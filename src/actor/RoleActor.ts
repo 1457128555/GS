@@ -1,143 +1,112 @@
-// import { Point } from 'pixi.js';
-// import { Actor } from '../core/Actor';
+import { Point } from 'pixi.js';
 
-// // LPC标准动作
-// export enum RoleAction
-// {
-//     IDLE = 'idle',
-//     WALK = 'walk',
-//     ATTACK = 'attack',
-//     CAST = 'cast',
-//     DIE = 'die'
-// }
+import { Actor } from '../core/Actor';
 
-// // 八方向
-// export enum RoleDirection
-// {
-//     DOWN = 0,
-//     LEFT = 1,
-//     RIGHT = 2,
-//     UP = 3,
-//     DOWN_LEFT = 4,
-//     DOWN_RIGHT = 5,
-//     UP_LEFT = 6,
-//     UP_RIGHT = 7
-// }
+export enum RoleAction {
+    IDLE = 'idle',
+    WALK = 'walk',
+}
 
-// export interface RoleState
-// {
-//     action: RoleAction;
-//     direction: RoleDirection;
-// }
+export enum RoleDirection {
+    UP    = 0,
+    LEFT  = 1,
+    DOWN  = 2,
+    RIGHT = 3,
+}
 
+export interface RoleState {
+    action: RoleAction;
+    direction: RoleDirection;
+}
 
+export class RoleActor extends Actor 
+{
+    protected mPosition: Point = new Point(0, 0);
+    protected mDirection: Point = new Point(0, 0);
+    protected mSpeed: number = 100;
 
-// export class RoleActor extends Actor 
-// {
-//     protected mPosition: Point = new Point(0, 0);
-//     protected mSpeed: number = 200;
-//     protected mVelocity = { x: 0, y: 0 };
+    protected mState: RoleState = {
+        action: RoleAction.IDLE,
+        direction: RoleDirection.DOWN
+    };
 
-//     protected mState: RoleState = {
-//         action: RoleAction.IDLE,
-//         direction: RoleDirection.DOWN
-//     };
+    // 状态变化回调，供组件监听
+    protected mStateListeners: Set<(state: RoleState) => void> = new Set();
+    
+    get state(): RoleState {
+        return this.mState;
+    }
 
-//     // 状态变化回调，供组件监听
-//     protected mStateListeners: Set<(state: RoleState) => void> = new Set();
+    get position(): Point {
+        return this.mPosition;
+    }
 
-//     get state(): RoleState {
-//         return this.mState;
-//     }
+    setPosition(x: number, y: number): void {
+        this.mPosition.set(x, y);
+        this.mContainer.position.set(x, y);
+    }
 
-//     get position(): Point {
-//         return this.mPosition;
-//     }
+    setAction(action: RoleAction): void {
+        if (this.mState.action !== action) {
+            this.mState.action = action;
+            this.notifyStateChange();
+        }
+    }
 
-//     setPosition(x: number, y: number): void {
-//         this.mPosition.set(x, y);
-//         this.mContainer.position.set(x, y);
-//     }
+    setDirection(direction: RoleDirection): void {
+        if (this.mState.direction !== direction) {
+            this.mState.direction = direction;
+            this.notifyStateChange();
+        }
+    }
 
-//     setAction(action: RoleAction): void {
-//         if (this.mState.action !== action) {
-//             this.mState.action = action;
-//             this.notifyStateChange();
-//         }
-//     }
+    addStateListener(listener: (state: RoleState) => void): void {
+        this.mStateListeners.add(listener);
+    }
 
-//     setDirection(direction: RoleDirection): void {
-//         if (this.mState.direction !== direction) {
-//             this.mState.direction = direction;
-//             this.notifyStateChange();
-//         }
-//     }
+    removeStateListener(listener: (state: RoleState) => void): void {
+        this.mStateListeners.delete(listener);
+    }
 
-//     addStateListener(listener: (state: RoleState) => void): void {
-//         this.mStateListeners.add(listener);
-//     }
+    protected notifyStateChange(): void {
+        for (const listener of this.mStateListeners) {
+            listener(this.mState);
+        }
+    }
 
-//     removeStateListener(listener: (state: RoleState) => void): void {
-//         this.mStateListeners.delete(listener);
-//     }
+    override initFromData(properties: Record<string, any>): void 
+    {
+        super.initFromData(properties);
+        if (properties.position) 
+            this.setPosition(properties.position.x, properties.position.y);
+        if (properties.direction)
+            this.setDirection(properties.direction);
+        if (properties.speed)
+            this.mSpeed = properties.speed;
+    }
 
-//     protected notifyStateChange(): void {
-//         for (const listener of this.mStateListeners) {
-//             listener(this.mState);
-//         }
-//     }
+    protected override onUpdate(dt: number): void {
+        if(this.mSpeed == 0)
+            this.setAction(RoleAction.IDLE);
+        else{
+            const newX = this.mPosition.x + this.mDirection.x * this.mSpeed * dt;
+            const newY = this.mPosition.y + this.mDirection.y * this.mSpeed * dt;
+            this.setPosition(newX, newY);
 
-//     override initFromData(properties: Record<string, any>): void 
-//     {
-//         super.initFromData(properties);
-//         if (properties.position) 
-//             this.setPosition(properties.position.x, properties.position.y);
-//         if (properties.speed)
-//             this.mSpeed = properties.speed;
-//     }
+            this.setAction(RoleAction.WALK);
+            this.setDirection(this.calculateDirection(this.mDirection.x, this.mDirection.y));
+        }
+    }
 
-//     protected override onUpdate(dt: number): void {
-//         // 根据速度更新位置
-//         if (this.mVelocity.x !== 0 || this.mVelocity.y !== 0) {
-//             const newX = this.mPosition.x + this.mVelocity.x * dt;
-//             const newY = this.mPosition.y + this.mVelocity.y * dt;
-//             this.setPosition(newX, newY);
-//         }
-//     }
-
-//     move(dx: number, dy: number): void {
-//         if (dx === 0 && dy === 0) {
-//             this.mVelocity.x = 0;
-//             this.mVelocity.y = 0;
-//             this.setAction(RoleAction.IDLE);
-//         } else {
-//             // 归一化方向向量，确保斜向移动速度一致
-
-//             const length = Math.sqrt(dx * dx + dy * dy);
-//             const normalizedDx = dx / length;
-//             const normalizedDy = dy / length;
-            
-//             this.mVelocity.x = normalizedDx * this.mSpeed;
-//             this.mVelocity.y = normalizedDy * this.mSpeed;
-            
-//             this.setAction(RoleAction.WALK);
-//             this.setDirection(this.calculateDirection(dx, dy));
-//         }
-//     }
-
-//     protected calculateDirection(dx: number, dy: number): RoleDirection {
-//         // 斜向优先判断
-//         if (dx < 0 && dy > 0) return RoleDirection.DOWN_LEFT;
-//         if (dx > 0 && dy > 0) return RoleDirection.DOWN_RIGHT;
-//         if (dx < 0 && dy < 0) return RoleDirection.UP_LEFT;
-//         if (dx > 0 && dy < 0) return RoleDirection.UP_RIGHT;
+    protected calculateDirection(dx: number, dy: number): RoleDirection {
+        // 如果有水平移动，优先显示水平方向
+        if (dx > 0) return RoleDirection.RIGHT;
+        if (dx < 0) return RoleDirection.LEFT;
         
-//         // 四正方向
-//         if (dy > 0) return RoleDirection.DOWN;
-//         if (dy < 0) return RoleDirection.UP;
-//         if (dx > 0) return RoleDirection.RIGHT;
-//         if (dx < 0) return RoleDirection.LEFT;
+        // 否则显示垂直方向
+        if (dy > 0) return RoleDirection.DOWN;
+        if (dy < 0) return RoleDirection.UP;
         
-//         return this.mState.direction;
-//     }
-// }
+        return this.mState.direction; // 保持当前方向
+    }
+}

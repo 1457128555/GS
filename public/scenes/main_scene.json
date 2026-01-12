@@ -87,5 +87,20 @@
             }
         }],    
         "children": []     
+    },{
+        "type": "PlayerActor",
+        "properties": {
+            "name": "Player",
+            "position": { "x": 360, "y": 640 }
+        },
+        "components": [{
+            "name": "PlayerRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character_sprite/character-spritesheet.png",
+                "zIndex": 100
+            }
+        }],
+        "children": []
     }]
 }
