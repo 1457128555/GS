@@ -2,8 +2,7 @@ import type { Actor } from './Actor';
 
 export abstract class Component 
 {
-    protected mName: string = ''; 
-
+    protected mName: string = "Component"; 
     protected mParent : Actor | null = null;
 
     get parent(): Actor | null 
@@ -36,7 +35,8 @@ export abstract class Component
 
     initFromData(properties: Record<string, any>): void
     {
-        this.mName = properties.name;
+        if('name' in properties)
+            this.mName = properties.name;
     }
 
     protected onAttach(): void {}

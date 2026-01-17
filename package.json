@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
+    "manifest": "node scripts/resource_collect.cjs",
+    "dev": "npm run manifest && vite",
+    "build": "npm run manifest && tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {

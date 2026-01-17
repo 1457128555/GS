@@ -21,7 +21,6 @@ export interface RoleState {
 
 export class RoleActor extends Actor 
 {
-    protected mPosition: Point = new Point(0, 0);
     protected mDirection: Point = new Point(0, 0);
     protected mSpeed: number = 100;
 
@@ -35,15 +34,6 @@ export class RoleActor extends Actor
     
     get state(): RoleState {
         return this.mState;
-    }
-
-    get position(): Point {
-        return this.mPosition;
-    }
-
-    setPosition(x: number, y: number): void {
-        this.mPosition.set(x, y);
-        this.mContainer.position.set(x, y);
     }
 
     setAction(action: RoleAction): void {
@@ -77,11 +67,10 @@ export class RoleActor extends Actor
     override initFromData(properties: Record<string, any>): void 
     {
         super.initFromData(properties);
-        if (properties.position) 
-            this.setPosition(properties.position.x, properties.position.y);
-        if (properties.direction)
+
+        if ('direction' in properties)
             this.setDirection(properties.direction);
-        if (properties.speed)
+        if ('speed' in properties)
             this.mSpeed = properties.speed;
     }
 

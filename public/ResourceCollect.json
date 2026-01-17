@@ -1,0 +1,14 @@
+{
+  "textures": [
+    "/texture/character_sprite/character-spritesheet.png",
+    "/texture/main_map/main_map.png",
+    "/texture/reborn_stone/reborn_stone.png",
+    "/texture/spring_water/spring_water_sheet.png"
+  ],
+  "files": [
+    "/actors/game_scene.json",
+    "/actors/player.json",
+    "/actors/reborn_stone.json",
+    "/actors/spring_water.json"
+  ]
+}

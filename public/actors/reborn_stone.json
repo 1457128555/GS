@@ -1,0 +1,18 @@
+{
+    "type": "Actor",          
+    "properties": {           
+        "name": "RebornStone"
+    },
+    "components": [{
+        "name": "RebornStoneRender",
+        "type": "TextureComp",
+        "properties": {
+            "path": "/texture/reborn_stone/reborn_stone.png",
+            "frameCount": 15,
+            "animationSpeed": 0.15,
+            "size": { "x": 200, "y": 200 },
+            "position": { "x": 0, "y": 0 }
+        }
+    }],    
+    "children": [] 
+}

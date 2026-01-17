@@ -24,10 +24,12 @@ export class TextureComp extends Component
     override initFromData(properties: Record<string, any>): void 
     {
         super.initFromData(properties);
-
-        this.mPath = properties.path;
-        this.mSize = new Point(properties.size.x, properties.size.y);
-        this.mPosition = new Point(properties.position.x, properties.position.y);
+        if('path' in properties)
+            this.mPath = properties.path;
+        if('size' in properties)
+            this.mSize = new Point(properties.size.x, properties.size.y);
+        if('position' in properties)
+            this.mPosition = new Point(properties.position.x, properties.position.y);
     }
 
     /**

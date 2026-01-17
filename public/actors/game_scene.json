@@ -1,0 +1,53 @@
+{
+    "type": "Scene",
+    "properties": {
+        "name": "GameScene",
+        "width": 720,
+        "height": 1280
+    },
+    "components": [{
+        "type": "TextureComp",
+        "name": "Background",
+        "properties": {
+            "path": "/texture/main_map/main_map.png",
+            "size": { "x": 720, "y": 1280 },
+            "position": { "x": 0, "y": 0 }
+        }
+    }],
+    "children": [
+        {
+            "path": "/actors/spring_water.json",
+            "override": {
+                "name": "SpringWater_0",
+                "position": { "x": 295, "y": 1180 }
+            }
+        },
+        {
+            "path": "/actors/spring_water.json",
+            "override": {
+                "name": "SpringWater_1",
+                "position": { "x": 295, "y": 0 }
+            }
+        },
+        {
+            "path": "/actors/reborn_stone.json",
+            "override": {
+                "name": "RebornStone_0",
+                "position": { "x": -50, "y": 600 }
+            }
+        },
+        {
+            "path": "/actors/reborn_stone.json",
+            "override": {
+                "name": "RebornStone_1",
+                "position": { "x": 570, "y": 600 }
+            }
+        },
+        {
+            "path": "/actors/player.json",
+            "override": {
+                "name": "Player"
+            }
+        }
+    ]
+}

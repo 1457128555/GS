@@ -28,12 +28,16 @@ export class AnimationComp extends Component
     {
         super.initFromData(properties);
 
-        this.mPath = properties.path;
-        this.mFrameCount = properties.frameCount;
-        this.mAnimationSpeed = properties.animationSpeed;
-        
-        this.mSize = new Point(properties.size.x, properties.size.y);
-        this.mPosition = new Point(properties.position.x, properties.position.y);
+        if('path' in properties)
+            this.mPath = properties.path;
+        if('frameCount' in properties)
+            this.mFrameCount = properties.frameCount;
+        if('animationSpeed' in properties)
+            this.mAnimationSpeed = properties.animationSpeed;
+        if('size' in properties)
+            this.mSize = new Point(properties.size.x, properties.size.y);
+        if('position' in properties)
+            this.mPosition = new Point(properties.position.x, properties.position.y);
     }
 
     /**

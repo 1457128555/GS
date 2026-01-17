@@ -31,6 +31,8 @@ export class Game
         this.mContainer.appendChild(this.mApp.canvas);
         this.resize();
         window.addEventListener('resize', this.resize);
+
+        await AssetManager.Instance().load();
     }
 
     private resize = (): void => 

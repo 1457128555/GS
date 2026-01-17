@@ -1,9 +1,11 @@
-import { Container } from 'pixi.js';
+import { Container, Point } from 'pixi.js';
 import { Component } from './Component';
 
 export class Actor 
 {
-    protected mName: string = ''; 
+    protected mName: string = "Actor"; 
+    protected mPosition: Point = new Point(0, 0);
+    
     protected mParent : Actor | null = null;
     protected mChildren : Set<Actor> = new Set();
     protected mComponents : Set<Component> = new Set();
@@ -13,6 +15,17 @@ export class Actor
     get container(): Container 
     {
         return this.mContainer;
+    }
+
+    get position(): Point 
+    {
+        return this.mPosition;
+    }
+
+    setPosition(x: number, y: number): void 
+    {
+        this.mPosition.set(x, y);
+        this.mContainer.position.set(x, y);
     }
 
     _attach(parent: Actor): void 
@@ -46,7 +59,10 @@ export class Actor
 
     initFromData(properties: Record<string, any>): void 
     {
-        this.mName = properties.name;
+        if('name' in properties)
+            this.mName = properties.name;
+        if('position' in properties)
+            this.setPosition(properties.position.x, properties.position.y);
     }
 
     protected onAttach(): void {}

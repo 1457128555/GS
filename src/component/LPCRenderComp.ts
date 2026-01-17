@@ -55,10 +55,10 @@ export class LPCRenderComp extends Component {
     override initFromData(properties: Record<string, any>): void {
         super.initFromData(properties);
 
-        this.mPath = properties.path;
+        if ('path' in properties) 
+            this.mPath = properties.path;
         if ('config' in properties) 
             this.mConfig = { ...this.mConfig, ...properties.config };
-
         if ('zIndex' in properties) 
             this.mZIndex = properties.zIndex;
     }

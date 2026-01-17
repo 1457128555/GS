@@ -2,7 +2,7 @@ import './style.css';
 
 import { Game } from './core/Game';
 import { Scene } from './actor/Scene';
-import { SceneLoader } from './core/SceneLoader';
+import { ActorLoader } from './core/ActorLoader';
 import { registerAllTypes } from './core/RegisterTypes';
 
 
@@ -22,7 +22,7 @@ async function main()
     await game.init(container);
 
     // 从JSON加载场景
-    const scene = await SceneLoader.loadFromFile('/scenes/main_scene.json') as Scene;
+    const scene = ActorLoader.loadFromTemplate({ path: '/actors/game_scene.json', override: { name: 'GameScene' } }) as Scene;
 
     // 加载游戏场景
     game.loadScene(scene);
