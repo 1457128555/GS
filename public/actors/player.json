@@ -5,10 +5,50 @@
         "position": { "x": 360, "y": 640 }
     },
     "components": [{
-        "name": "PlayerRender",
+        "name": "BodyRender",
         "type": "LPCRenderComp",
         "properties": {
-            "path": "/texture/character_sprite/character-spritesheet.png",
+            "path": "/texture/character/body/body.png",
+            "zIndex": 100
+        }
+    },
+    {
+        "name": "headRender",
+        "type": "LPCRenderComp",
+        "properties": {
+            "path": "/texture/character/head/level_1.png",
+            "zIndex": 100
+        }
+    },
+    {
+        "name": "jacketRender",
+        "type": "LPCRenderComp",
+        "properties": {
+            "path": "/texture/character/jacket/level_1.png",
+            "zIndex": 100   
+        }
+    },
+    {
+        "name": "pantsRender",
+        "type": "LPCRenderComp",
+        "properties": {
+            "path": "/texture/character/pants/level_1.png",
+            "zIndex": 100
+        }
+    },
+    {
+        "name": "shoeRender",
+        "type": "LPCRenderComp",
+        "properties": {
+            "path": "/texture/character/shoe/level_1.png",
+            "zIndex": 100
+        }
+    },
+    {
+        "name": "swordRender",
+        "type": "LPCRenderComp",
+        "properties": {
+            "path": "/texture/character/sword/level_1.png",
             "zIndex": 100
         }
     }],
