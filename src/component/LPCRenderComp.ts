@@ -20,8 +20,13 @@ export class LPCRenderComp extends Component {
         frameWidth: 64,
         frameHeight: 64,
         actions: {
-            [RoleAction.IDLE]: { row: 10, frameCount: 1, loop: false },
+            // IDLE 使用 Walk 的第一帧（精灵表没有独立的战斗待机）
+            [RoleAction.IDLE]: { row: 8, frameCount: 1, loop: false },
             [RoleAction.WALK]: { row: 8, frameCount: 9, loop: true },
+            [RoleAction.SLASH]: { row: 12, frameCount: 6, loop: false }, 
+            [RoleAction.BACK_SLASH]: { row: 16, frameCount: 13, loop: false },
+            [RoleAction.HURT]: { row: 32, frameCount: 6, loop: false },
+            [RoleAction.DEAD]: { row: 36, frameCount: 6, loop: false },
         },
     };
     protected mZIndex: number = 0;
@@ -71,6 +76,8 @@ export class LPCRenderComp extends Component {
         this.mAnimatedSprite = new AnimatedSprite(defaultFrames);
         this.mAnimatedSprite.zIndex = this.mZIndex;
         this.mAnimatedSprite.animationSpeed = 0.15;
+        // 设置锚点为底部中心，这样位置就是角色脚下的位置
+        this.mAnimatedSprite.anchor.set(0.5, 1);
     }
 
     // 根据动作和方向获取帧

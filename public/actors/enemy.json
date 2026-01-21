@@ -1,0 +1,78 @@
+{
+    "type": "EnemyActor",
+    "properties": {
+        "name": "Enemy",
+        "position": { "x": 360, "y": 200 },
+        "hp": 50,
+        "atk": 8,
+        "attackRange": 50,
+        "attackCooldown": 1.2,
+        "speed": 80
+    },
+    "components": [
+        {
+            "name": "BodyRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/body/body.png",
+                "zIndex": 100
+            }
+        },
+        {
+            "name": "HeadRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/head/level_1.png",
+                "zIndex": 101
+            }
+        },
+        {
+            "name": "JacketRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/jacket/level_1.png",
+                "zIndex": 102
+            }
+        },
+        {
+            "name": "PantsRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/pants/level_1.png",
+                "zIndex": 103
+            }
+        },
+        {
+            "name": "ShoeRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/shoe/level_1.png",
+                "zIndex": 104
+            }
+        },
+        {
+            "name": "SwordRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/sword/level_1.png",
+                "zIndex": 105
+            }
+        },
+        {
+            "name": "Battle",
+            "type": "BattleComp",
+            "properties": {}
+        },
+        {
+            "name": "HealthBar",
+            "type": "HealthBarComp",
+            "properties": {
+                "width": 40,
+                "height": 5,
+                "offsetY": -50,
+                "color": 16711680
+            }
+        }
+    ],
+    "children": []
+}

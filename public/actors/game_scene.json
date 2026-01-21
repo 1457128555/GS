@@ -42,12 +42,6 @@
                 "name": "RebornStone_1",
                 "position": { "x": 570, "y": 600 }
             }
-        },
-        {
-            "path": "/actors/player.json",
-            "override": {
-                "name": "Player"
-            }
         }
     ]
 }

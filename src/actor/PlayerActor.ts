@@ -1,15 +1,27 @@
-import { RoleActor } from './RoleActor';
+import { RoleActor, RoleDirection, RoleAction } from './RoleActor';
 
 export class PlayerActor extends RoleActor {
 
-    private mAngle: number = 0;
-    private mAngularSpeed: number = 1; // 每秒转动的弧度，可调整速度
+    private mAttackTimer: number = 0;
+    private mDirIndex: number = 0;
+    private mDirs = [
+        RoleDirection.DOWN, 
+        RoleDirection.LEFT, 
+        RoleDirection.UP, 
+        RoleDirection.RIGHT
+    ];
 
     protected override onUpdate(dt: number): void {
-        this.mAngle += this.mAngularSpeed * dt;
-        this.mDirection.x = Math.cos(this.mAngle);
-        this.mDirection.y = Math.sin(this.mAngle);
+        this.mAttackTimer += dt;
         
-        super.onUpdate(dt);
+        // 每1秒攻击一次，换一个方向
+        if (this.mAttackTimer >= 1.0) {
+            this.mAttackTimer = 0;
+            this.setDirection(this.mDirs[this.mDirIndex]);
+            this.setAction(RoleAction.SLASH);
+            this.mDirIndex = (this.mDirIndex + 1) % 4;
+        }
+        
+        //super.onUpdate(dt);
     }
 }

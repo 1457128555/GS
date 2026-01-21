@@ -1,0 +1,275 @@
+---
+description: GS 弹幕游戏项目开发规范 - Cursor AI 必读
+globs: 
+  - "**/*.ts"
+  - "**/*.json"
+alwaysApply: true
+---
+
+# GS 弹幕游戏 - 项目规范
+
+## 项目概述
+
+这是一个需要内嵌到**抖音直播伴侣**的弹幕互动游戏，基于 **PixiJS v8 + TypeScript + Vite**。
+
+- **游戏分辨率**：720x1280（竖屏，9:16）
+- **目标平台**：抖音直播伴侣内嵌网页
+- **核心玩法**：观众通过弹幕/礼物/关注与游戏互动
+
+---
+
+## 核心架构：Actor-Component 系统
+
+### 架构概念
+
+```
+Game (游戏主循环)
+  └── Scene (场景，Actor 树的根节点)
+        ├── Actor (游戏实体)
+        │     ├── Component[] (组件列表)
+        │     └── Actor[] (子实体)
+        └── ...
+```
+
+- **Actor**：游戏实体，可嵌套子 Actor，可挂载多个 Component
+- **Component**：可复用的行为/渲染逻辑，必须挂载到 Actor 上
+- **Scene**：特殊的 Actor，作为场景根节点
+- **JSON 配置驱动**：Actor 和场景通过 JSON 文件定义，由 `ActorLoader` 加载
+
+### 核心类
+
+| 类名 | 位置 | 职责 |
+|------|------|------|
+| `Game` | `src/core/Game.ts` | 游戏主循环、场景管理、PixiJS 初始化 |
+| `Actor` | `src/core/Actor.ts` | 实体基类，管理子 Actor 和 Component |
+| `Component` | `src/core/Component.ts` | 组件抽象基类 |
+| `Scene` | `src/actor/Scene.ts` | 场景 Actor |
+| `RoleActor` | `src/actor/RoleActor.ts` | 角色 Actor，包含状态机（动作+方向） |
+| `ActorLoader` | `src/core/ActorLoader.ts` | JSON → Actor 实例转换器 |
+| `TypeRegistry` | `src/core/TypeRegistry.ts` | 类型注册表，管理可序列化类型 |
+| `AssetManager` | `src/core/AssetManager.ts` | 资源管理器（纹理+JSON） |
+
+---
+
+## 开发规范
+
+### 1. 创建新 Actor
+
+```typescript
+// 1. 在 src/actor/ 下创建文件
+// 2. 继承 Actor 或 RoleActor
+import { Actor } from '../core/Actor';
+
+export class MyActor extends Actor {
+    protected mCustomProperty: number = 0;  // 使用 m 前缀
+
+    override initFromData(properties: Record<string, any>): void {
+        super.initFromData(properties);
+        if ('customProperty' in properties)
+            this.mCustomProperty = properties.customProperty;
+    }
+
+    protected override onAttach(): void {
+        // 挂载时调用
+    }
+
+    protected override onUpdate(dt: number): void {
+        // 每帧更新
+    }
+
+    protected override onDetach(): void {
+        // 移除时调用
+    }
+}
+
+// 3. 在 RegisterTypes.ts 中注册
+TypeRegistry.registerActor('MyActor', MyActor);
+```
+
+### 2. 创建新 Component
+
+```typescript
+// 1. 在 src/component/ 下创建文件
+// 2. 继承 Component
+import { Component } from '../core/Component';
+
+export class MyComp extends Component {
+    protected mValue: string = '';
+
+    override initFromData(properties: Record<string, any>): void {
+        super.initFromData(properties);
+        if ('value' in properties)
+            this.mValue = properties.value;
+    }
+
+    protected override onAttach(): void {
+        // 挂载到 Actor 时调用，this.parent 可用
+    }
+
+    protected override onUpdate(dt: number): void {
+        // 每帧更新
+    }
+
+    protected override onDetach(): void {
+        // 从 Actor 移除时调用
+    }
+}
+
+// 3. 在 RegisterTypes.ts 中注册
+TypeRegistry.registerComponent('MyComp', MyComp);
+```
+
+### 3. JSON 配置格式
+
+**Actor 配置文件** (`public/actors/xxx.json`)：
+
+```json
+{
+    "type": "MyActor",
+    "properties": {
+        "name": "实体名称",
+        "position": { "x": 100, "y": 200 },
+        "customProperty": 42
+    },
+    "components": [
+        {
+            "type": "MyComp",
+            "name": "组件名称",
+            "properties": {
+                "value": "hello"
+            }
+        }
+    ],
+    "children": [
+        {
+            "path": "/actors/other.json",
+            "override": { "name": "覆盖的名称" }
+        }
+    ]
+}
+```
+
+---
+
+## 代码风格
+
+### 命名规范
+
+- **类成员变量**：`m` 前缀，如 `mName`, `mPosition`, `mComponents`
+- **静态成员变量**：`s` 前缀，如 `sInstance`, `sActorTypes`
+- **内部方法**（框架调用）：`_` 前缀，如 `_update()`, `_attach()`, `_detach()`
+- **生命周期钩子**：`on` 前缀，如 `onAttach()`, `onUpdate()`, `onDetach()`
+
+### 格式规范
+
+- 使用 **4 空格缩进**
+- 大括号换行风格（Allman style）
+- TypeScript 严格模式
+
+```typescript
+// ✅ 正确
+export class MyClass 
+{
+    private mValue: number = 0;
+
+    doSomething(): void 
+    {
+        if (this.mValue > 0) 
+        {
+            // ...
+        }
+    }
+}
+
+// ❌ 错误（K&R 风格）
+export class MyClass {
+    private value: number = 0;
+}
+```
+
+---
+
+## 资源管理
+
+### 目录结构
+
+```
+public/
+├── actors/           # Actor JSON 配置
+│   ├── game_scene.json
+│   ├── player.json
+│   └── ...
+├── texture/          # 纹理资源
+│   ├── character/    # 角色精灵表
+│   ├── main_map/     # 地图
+│   └── ...
+└── ResourceCollect.json  # 资源清单（自动生成）
+```
+
+### 资源清单
+
+运行 `npm run manifest` 自动扫描 `public/` 目录，生成 `ResourceCollect.json`。
+
+**重要**：添加新资源后必须运行此命令！
+
+---
+
+## 角色系统 (RoleActor)
+
+### 角色状态
+
+```typescript
+enum RoleAction {
+    IDLE = 'idle',        // 待机
+    WALK = 'walk',        // 行走
+    SLASH = 'slash',      // 斩击
+    BACK_SLASH = 'back_slash',  // 背斩
+}
+
+enum RoleDirection {
+    UP = 0,
+    LEFT = 1,
+    DOWN = 2,
+    RIGHT = 3,
+}
+```
+
+### LPC 精灵表
+
+角色使用 LPC (Liberated Pixel Cup) 风格的精灵表：
+- 每帧 64x64 像素
+- 每个方向占一行
+- 支持多层叠加（body, head, jacket, pants, shoe, sword）
+
+---
+
+## 弹幕互动（待实现）
+
+游戏需要接收抖音直播伴侣的弹幕事件：
+
+| 事件 | 游戏响应 |
+|------|----------|
+| 用户送礼 | 召唤角色 / 增强属性 |
+| 用户评论 | 触发技能 / 发送弹幕 |
+| 用户关注 | 特殊奖励 |
+| 用户点赞 | 小额奖励 |
+
+---
+
+## 常用命令
+
+```bash
+npm install      # 安装依赖
+npm run dev      # 启动开发服务器
+npm run build    # 构建生产版本
+npm run manifest # 更新资源清单
+```
+
+---
+
+## 重要提示
+
+1. **类型注册**：新建 Actor/Component 后，必须在 `src/core/RegisterTypes.ts` 中注册
+2. **资源清单**：添加新资源后，运行 `npm run manifest`
+3. **JSON 路径**：JSON 中的路径以 `/` 开头，表示 `public/` 目录
+4. **PixiJS 版本**：使用 v8，API 与 v7 有较大差异，注意查阅官方文档

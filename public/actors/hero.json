@@ -1,0 +1,77 @@
+{
+    "type": "HeroActor",
+    "properties": {
+        "name": "Hero",
+        "position": { "x": 360, "y": 640 },
+        "hp": 200,
+        "atk": 25,
+        "attackRange": 60,
+        "attackCooldown": 0.8,
+        "speed": 120
+    },
+    "components": [
+        {
+            "name": "BodyRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/body/body.png",
+                "zIndex": 100
+            }
+        },
+        {
+            "name": "HeadRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/head/level_5.png",
+                "zIndex": 101
+            }
+        },
+        {
+            "name": "JacketRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/jacket/level_5.png",
+                "zIndex": 102
+            }
+        },
+        {
+            "name": "PantsRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/pants/level_5.png",
+                "zIndex": 103
+            }
+        },
+        {
+            "name": "ShoeRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/shoe/level_5.png",
+                "zIndex": 104
+            }
+        },
+        {
+            "name": "SwordRender",
+            "type": "LPCRenderComp",
+            "properties": {
+                "path": "/texture/character/sword/level_5.png",
+                "zIndex": 105
+            }
+        },
+        {
+            "name": "Battle",
+            "type": "BattleComp",
+            "properties": {}
+        },
+        {
+            "name": "HealthBar",
+            "type": "HealthBarComp",
+            "properties": {
+                "width": 50,
+                "height": 6,
+                "offsetY": -55
+            }
+        }
+    ],
+    "children": []
+}

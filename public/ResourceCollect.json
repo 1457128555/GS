@@ -31,7 +31,9 @@
     "/texture/spring_water/spring_water_sheet.png"
   ],
   "files": [
+    "/actors/enemy.json",
     "/actors/game_scene.json",
+    "/actors/hero.json",
     "/actors/player.json",
     "/actors/reborn_stone.json",
     "/actors/spring_water.json"

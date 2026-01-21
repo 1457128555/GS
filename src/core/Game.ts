@@ -1,6 +1,7 @@
 import { Application } from 'pixi.js';
 import { AssetManager } from './AssetManager';
 import { Scene } from '../actor/Scene';
+import { BattleManager } from '../manager/BattleManager';
 
 export class Game 
 {
@@ -71,6 +72,10 @@ export class Game
         if (this.mCurrentScene) 
         {
             const deltaTime = this.mApp.ticker.deltaMS / 1000;
+            
+            // 更新战斗管理器（处理碰撞分离等）
+            BattleManager.Instance().update(deltaTime);
+            
             this.mCurrentScene._update(deltaTime);
         }
     }
