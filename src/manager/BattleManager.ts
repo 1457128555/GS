@@ -1,4 +1,4 @@
-import { RoleActor, RoleFaction } from '../actor/RoleActor';
+import { RoleActor, RoleFaction, RoleAction } from '../actor/RoleActor';
 
 /**
  * 战斗管理器 - 管理战斗逻辑和阵营
@@ -57,30 +57,40 @@ export class BattleManager
 
     /**
      * 处理角色之间的分离（防止重叠）
-     * 只对同阵营角色生效，敌对阵营可以近身战斗
+     * 所有角色之间都会进行碰撞分离
      */
     private processSeparation(dt: number): void 
     {
         const separationRadius = this.mCollisionRadius * 2;  // 分离检测半径
 
-        // 分别处理英雄阵营和敌人阵营的内部分离
-        this.processFactionSeparation(Array.from(this.mHeroes), separationRadius, dt);
-        this.processFactionSeparation(Array.from(this.mEnemies), separationRadius, dt);
+        // 获取所有存活角色
+        const allRoles = this.getAllAliveRoles();
+        
+        // 处理所有角色之间的碰撞分离
+        this.processAllRolesSeparation(allRoles, separationRadius, dt);
     }
 
     /**
-     * 处理单个阵营内部的分离
+     * 处理所有角色之间的分离
      */
-    private processFactionSeparation(roles: RoleActor[], separationRadius: number, dt: number): void 
+    private processAllRolesSeparation(roles: RoleActor[], separationRadius: number, dt: number): void 
     {
         for (const role of roles) {
             if (role.isDead) continue;
+            
+            // 攻击/受伤状态不参与分离，让角色站定对砍
+            const action = role.state.action;
+            if (action === RoleAction.SLASH || 
+                action === RoleAction.BACK_SLASH ||
+                action === RoleAction.HURT) {
+                continue;
+            }
 
             let separationX = 0;
             let separationY = 0;
             let neighborCount = 0;
 
-            // 只检查同阵营的其他角色
+            // 检查与所有其他角色的碰撞
             for (const other of roles) {
                 if (other === role || other.isDead) continue;
 
@@ -181,9 +191,15 @@ export class BattleManager
     {
         console.log(`[Battle] ${role.faction} died!`);
         
-        // 延迟移除，让死亡动画播放
+        // 延迟移除，让死亡动画播放完
         setTimeout(() => {
+            // 从战斗系统注销
             this.unregisterRole(role);
+            
+            // 从场景中移除（Actor 树中移除）
+            role._detach();
+            
+            console.log(`[Battle] ${role.faction} removed from scene`);
         }, 1000);
     }
 

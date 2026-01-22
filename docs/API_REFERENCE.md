@@ -13,11 +13,19 @@
   - [Scene](#scene)
 - [角色系统](#角色系统)
   - [RoleActor](#roleactor)
+  - [HeroActor](#heroactor)
+  - [EnemyActor](#enemyactor)
   - [PlayerActor](#playeractor)
 - [组件](#组件)
   - [TextureComp](#texturecomp)
   - [AnimationComp](#animationcomp)
   - [LPCRenderComp](#lpcrendercomp)
+  - [BattleComp](#battlecomp)
+  - [HealthBarComp](#healthbarcomp)
+- [管理器](#管理器)
+  - [BattleManager](#battlemanager)
+  - [HeroManager](#heromanager)
+  - [EnemyManager](#enemymanager)
 - [工具类](#工具类)
   - [TypeRegistry](#typeregistry)
   - [ActorLoader](#actorloader)
@@ -66,7 +74,7 @@ await game.init(container);
 
 ##### `loadScene(scene: Scene): void`
 
-加载并显示场景。
+加载并显示场景，启动游戏主循环。
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
@@ -281,7 +289,7 @@ const actor = component.parent;
 
 ### RoleActor
 
-角色实体，包含状态机（动作+方向）。
+角色实体基类，包含状态机（动作+方向）和战斗属性。
 
 **文件位置**：`src/actor/RoleActor.ts`
 
@@ -289,21 +297,31 @@ const actor = component.parent;
 
 #### 属性
 
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `mDirection` | `Point` | 移动方向向量 |
-| `mSpeed` | `number` | 移动速度 |
-| `mState` | `RoleState` | 当前状态 |
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `mDirection` | `Point` | `(0, 0)` | 移动方向向量 |
+| `mSpeed` | `number` | `100` | 移动速度 |
+| `mState` | `RoleState` | - | 当前状态 |
+| `mFaction` | `RoleFaction` | `HERO` | 阵营 |
+| `mHP` | `number` | `100` | 当前血量 |
+| `mMaxHP` | `number` | `100` | 最大血量 |
+| `mATK` | `number` | `10` | 攻击力 |
+| `mAttackRange` | `number` | `60` | 攻击范围 |
+| `mAttackCooldown` | `number` | `1.0` | 攻击冷却时间 |
+| `mIsDead` | `boolean` | `false` | 是否死亡 |
 
 #### Getter
 
-##### `state: RoleState`
-
-获取当前状态。
-
 ```typescript
-const state = role.state;
-console.log(state.action, state.direction);
+role.state;           // RoleState
+role.faction;         // RoleFaction
+role.hp;              // number
+role.maxHP;           // number
+role.atk;             // number
+role.attackRange;     // number
+role.attackCooldown;  // number
+role.isDead;          // boolean
+role.speed;           // number
 ```
 
 #### 方法
@@ -324,19 +342,95 @@ role.setAction(RoleAction.WALK);
 role.setDirection(RoleDirection.LEFT);
 ```
 
+##### `takeDamage(damage: number, attacker?: RoleActor): void`
+
+受到伤害。
+
+```typescript
+role.takeDamage(25, attacker);
+```
+
+##### `heal(amount: number): void`
+
+治疗（恢复血量）。
+
+```typescript
+role.heal(50);
+```
+
+##### `distanceTo(target: RoleActor): number`
+
+计算与目标的距离。
+
+```typescript
+const dist = role.distanceTo(enemy);
+```
+
+##### `faceTarget(target: RoleActor): void`
+
+朝向目标。
+
+```typescript
+role.faceTarget(enemy);
+```
+
+##### `moveToward(target: RoleActor, dt: number): void`
+
+向目标移动（每帧调用）。
+
+```typescript
+role.moveToward(enemy, deltaTime);
+```
+
+##### `applyForce(forceX: number, forceY: number): void`
+
+应用外力（用于碰撞分离）。
+
+```typescript
+role.applyForce(10, 5);
+```
+
 ##### `addStateListener(listener: (state: RoleState) => void): void`
 
 添加状态变化监听器。
 
 ```typescript
 role.addStateListener((state) => {
-    console.log('状态变化:', state);
+    console.log('状态变化:', state.action, state.direction);
 });
 ```
 
 ##### `removeStateListener(listener: (state: RoleState) => void): void`
 
 移除状态监听器。
+
+##### `addHPListener(listener: (hp: number, maxHP: number) => void): void`
+
+添加血量变化监听器。
+
+```typescript
+role.addHPListener((hp, maxHP) => {
+    console.log(`HP: ${hp}/${maxHP}`);
+});
+```
+
+##### `removeHPListener(listener: (hp: number, maxHP: number) => void): void`
+
+移除血量监听器。
+
+##### `addDeathListener(listener: (role: RoleActor) => void): void`
+
+添加死亡监听器。
+
+```typescript
+role.addDeathListener((role) => {
+    console.log('角色死亡');
+});
+```
+
+##### `removeDeathListener(listener: (role: RoleActor) => void): void`
+
+移除死亡监听器。
 
 #### initFromData 支持的属性
 
@@ -346,6 +440,81 @@ role.addStateListener((state) => {
 | `position` | `{ x, y }` | - | 位置 |
 | `direction` | `RoleDirection` | `DOWN` | 初始朝向 |
 | `speed` | `number` | `100` | 移动速度 |
+| `faction` | `RoleFaction` | `HERO` | 阵营 |
+| `hp` | `number` | `100` | 血量（同时设置 maxHP） |
+| `maxHP` | `number` | `100` | 最大血量 |
+| `atk` | `number` | `10` | 攻击力 |
+| `attackRange` | `number` | `60` | 攻击范围 |
+| `attackCooldown` | `number` | `1.0` | 攻击冷却时间 |
+
+---
+
+### HeroActor
+
+英雄角色，继承自 `RoleActor`。观众进入直播间生成的角色。
+
+**文件位置**：`src/actor/HeroActor.ts`
+
+#### 额外属性
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `mUserId` | `string` | 用户 ID |
+| `mUserName` | `string` | 用户昵称 |
+
+#### Getter
+
+```typescript
+hero.userId;    // string
+hero.userName;  // string
+```
+
+#### initFromData 支持的属性
+
+继承 `RoleActor` 的所有属性，额外支持：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `userId` | `string` | 用户 ID |
+| `userName` | `string` | 用户昵称 |
+
+#### 默认行为
+
+- 阵营默认为 `RoleFaction.HERO`
+- 初始朝向为 `UP`（朝向敌人）
+
+---
+
+### EnemyActor
+
+敌人角色，继承自 `RoleActor`。地图上方的敌人小兵。
+
+**文件位置**：`src/actor/EnemyActor.ts`
+
+#### 额外属性
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `mEnemyId` | `string` | 敌人 ID |
+
+#### Getter
+
+```typescript
+enemy.enemyId;  // string
+```
+
+#### initFromData 支持的属性
+
+继承 `RoleActor` 的所有属性，额外支持：
+
+| 属性 | 类型 | 说明 |
+|------|------|------|
+| `enemyId` | `string` | 敌人 ID |
+
+#### 默认行为
+
+- 阵营默认为 `RoleFaction.ENEMY`
+- 初始朝向为 `DOWN`（朝向玩家）
 
 ---
 
@@ -398,11 +567,22 @@ role.addStateListener((state) => {
 | 属性 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `path` | `string` | ✅ | 精灵表路径 |
-| `frameWidth` | `number` | ✅ | 单帧宽度 |
-| `frameHeight` | `number` | ✅ | 单帧高度 |
 | `frameCount` | `number` | ✅ | 总帧数 |
-| `animationSpeed` | `number` | ❌ | 播放速度（默认 0.1） |
-| `loop` | `boolean` | ❌ | 是否循环（默认 true） |
+| `animationSpeed` | `number` | ❌ | 播放速度（默认 0.15） |
+| `size` | `{ x, y }` | ❌ | 显示尺寸 |
+| `position` | `{ x, y }` | ❌ | 位置偏移 |
+
+```json
+{
+    "type": "AnimationComp",
+    "properties": {
+        "path": "/texture/spring_water/spring_water_sheet.png",
+        "frameCount": 4,
+        "animationSpeed": 0.1,
+        "size": { "x": 64, "y": 64 }
+    }
+}
+```
 
 ---
 
@@ -438,10 +618,283 @@ interface LPCSheetConfig {
 
 | 动作 | 起始行 | 帧数 | 循环 |
 |------|--------|------|------|
-| IDLE | 10 | 1 | 否 |
+| IDLE | 8 | 1 | 否 |
 | WALK | 8 | 9 | 是 |
 | SLASH | 12 | 6 | 否 |
-| BACK_SLASH | 18 | 6 | 否 |
+| BACK_SLASH | 16 | 13 | 否 |
+| HURT | 32 | 6 | 否 |
+| DEAD | 36 | 6 | 否 |
+
+---
+
+### BattleComp
+
+战斗组件，处理角色的自动战斗 AI。
+
+**文件位置**：`src/component/BattleComp.ts`
+
+#### 战斗状态
+
+| 状态 | 说明 |
+|------|------|
+| `IDLE` | 待机 |
+| `SEEK_TARGET` | 寻找目标 |
+| `MOVE_TO_TARGET` | 移动到目标 |
+| `ATTACK` | 攻击中 |
+| `COOLDOWN` | 攻击冷却 |
+
+#### 行为
+
+1. **挂载时**：注册到 `BattleManager`，开始寻找目标
+2. **SEEK_TARGET**：调用 `BattleManager.getNearestEnemy()` 获取最近敌人
+3. **MOVE_TO_TARGET**：调用 `role.moveToward()` 向目标移动，到达攻击范围后切换到攻击
+4. **ATTACK**：面向目标，播放攻击动画，动画中间调用 `BattleManager.processAttack()` 造成伤害
+5. **COOLDOWN**：等待冷却时间后重新寻找目标
+6. **卸载时**：从 `BattleManager` 注销
+
+```json
+{
+    "type": "BattleComp",
+    "properties": {}
+}
+```
+
+---
+
+### HealthBarComp
+
+血条组件，显示角色血量。
+
+**文件位置**：`src/component/HealthBarComp.ts`
+
+#### initFromData 支持的属性
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `width` | `number` | `40` | 血条宽度 |
+| `height` | `number` | `6` | 血条高度 |
+| `offsetY` | `number` | `-50` | Y 轴偏移（负数表示在角色上方） |
+| `color` | `number` | `0x00ff00` | 血条颜色（十六进制） |
+
+#### 行为
+
+- 监听 `RoleActor` 的血量变化
+- 血量 ≤ 30% 时变为橙色警告
+- 死亡时隐藏血条
+
+```json
+{
+    "type": "HealthBarComp",
+    "properties": {
+        "width": 40,
+        "height": 6,
+        "offsetY": -50,
+        "color": 16711680
+    }
+}
+```
+
+---
+
+## 管理器
+
+### BattleManager
+
+战斗管理器（单例），管理战斗逻辑和阵营。
+
+**文件位置**：`src/manager/BattleManager.ts`
+
+#### 方法
+
+##### `static Instance(): BattleManager`
+
+获取单例实例。
+
+##### `registerRole(role: RoleActor): void`
+
+注册角色到战斗系统。根据阵营分组，并监听死亡事件。
+
+```typescript
+BattleManager.Instance().registerRole(hero);
+```
+
+##### `unregisterRole(role: RoleActor): void`
+
+取消注册角色。
+
+##### `update(dt: number): void`
+
+每帧更新，处理同阵营角色的碰撞分离。
+
+##### `getEnemiesOf(role: RoleActor): RoleActor[]`
+
+获取敌对阵营的所有存活角色。
+
+```typescript
+const enemies = BattleManager.Instance().getEnemiesOf(hero);
+```
+
+##### `getNearestEnemy(role: RoleActor): RoleActor | null`
+
+获取最近的敌人。
+
+```typescript
+const nearest = BattleManager.Instance().getNearestEnemy(hero);
+```
+
+##### `processAttack(attacker: RoleActor, target: RoleActor): void`
+
+处理攻击，对目标造成伤害。
+
+```typescript
+BattleManager.Instance().processAttack(hero, enemy);
+```
+
+##### `getAllAliveRoles(): RoleActor[]`
+
+获取所有存活的角色。
+
+##### `getHeroCount(): number`
+
+获取存活英雄数量。
+
+##### `getEnemyCount(): number`
+
+获取存活敌人数量。
+
+##### `isBattleOver(): boolean`
+
+检查战斗是否结束（一方全灭）。
+
+##### `clear(): void`
+
+清理所有角色。
+
+---
+
+### HeroManager
+
+英雄管理器（单例），管理观众英雄的创建和销毁。
+
+**文件位置**：`src/manager/HeroManager.ts`
+
+#### 方法
+
+##### `static Instance(): HeroManager`
+
+获取单例实例。
+
+##### `init(scene: Scene): void`
+
+初始化，绑定场景。
+
+```typescript
+HeroManager.Instance().init(scene);
+```
+
+##### `spawnHero(userId: string, userName?: string): HeroActor | null`
+
+生成英雄。如果用户已有英雄则返回已存在的。
+
+```typescript
+const hero = HeroManager.Instance().spawnHero('user_123', '观众A');
+```
+
+##### `removeHero(userId: string): void`
+
+移除英雄。
+
+```typescript
+HeroManager.Instance().removeHero('user_123');
+```
+
+##### `getHero(userId: string): HeroActor | undefined`
+
+获取英雄。
+
+##### `hasHero(userId: string): boolean`
+
+检查英雄是否存在。
+
+##### `getAllHeroes(): HeroActor[]`
+
+获取所有英雄。
+
+##### `getHeroCount(): number`
+
+获取英雄数量。
+
+##### `clear(): void`
+
+清理所有英雄。
+
+---
+
+### EnemyManager
+
+敌人管理器（单例），管理敌人小兵的创建和销毁。
+
+**文件位置**：`src/manager/EnemyManager.ts`
+
+#### 方法
+
+##### `static Instance(): EnemyManager`
+
+获取单例实例。
+
+##### `init(scene: Scene): void`
+
+初始化，绑定场景。
+
+```typescript
+EnemyManager.Instance().init(scene);
+```
+
+##### `spawnEnemiesPoisson(count: number, area: {...}, minDistance?: number): void`
+
+使用泊松盘采样批量生成敌人（均匀随机分布）。
+
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `count` | `number` | 敌人数量 |
+| `area` | `{ x, y, width, height }` | 生成区域 |
+| `minDistance` | `number` | 最小间距（默认 60） |
+
+```typescript
+EnemyManager.Instance().spawnEnemiesPoisson(
+    10,
+    { x: 100, y: 100, width: 520, height: 300 },
+    60
+);
+```
+
+##### `spawnEnemy(enemyId: string, x: number, y: number): EnemyActor | null`
+
+生成单个敌人。
+
+```typescript
+const enemy = EnemyManager.Instance().spawnEnemy('enemy_1', 200, 150);
+```
+
+##### `removeEnemy(enemyId: string): void`
+
+移除敌人。
+
+##### `getEnemy(enemyId: string): EnemyActor | undefined`
+
+获取敌人。
+
+##### `getAllEnemies(): EnemyActor[]`
+
+获取所有敌人。
+
+##### `getEnemyCount(): number`
+
+获取敌人数量。
+
+##### `clear(): void`
+
+清理所有敌人。
 
 ---
 
@@ -476,7 +929,7 @@ TypeRegistry.registerComponent('MyComp', MyComp);
 创建 Actor 实例。
 
 ```typescript
-const actor = TypeRegistry.createActor('PlayerActor');
+const actor = TypeRegistry.createActor('HeroActor');
 ```
 
 ##### `createComponent(type: string): Component`
@@ -484,7 +937,7 @@ const actor = TypeRegistry.createActor('PlayerActor');
 创建 Component 实例。
 
 ```typescript
-const comp = TypeRegistry.createComponent('TextureComp');
+const comp = TypeRegistry.createComponent('BattleComp');
 ```
 
 ##### `hasActor(type: string): boolean`
@@ -517,9 +970,13 @@ interface ActorTemplateData {
 ```
 
 ```typescript
-const player = ActorLoader.loadFromTemplate({
-    path: '/actors/player.json',
-    override: { name: 'Player_1' }
+const hero = ActorLoader.loadFromTemplate({
+    path: '/actors/hero.json',
+    override: { 
+        name: 'Hero_1',
+        userId: 'user_123',
+        position: { x: 360, y: 950 }
+    }
 });
 ```
 
@@ -583,7 +1040,7 @@ const texture = AssetManager.Instance().getTexture('/texture/map.png');
 获取 JSON 文件内容（返回深拷贝）。
 
 ```typescript
-const data = AssetManager.Instance().getFile('/actors/player.json');
+const data = AssetManager.Instance().getFile('/actors/hero.json');
 ```
 
 ##### `hasTexture(path: string): boolean`
@@ -604,10 +1061,12 @@ const data = AssetManager.Instance().getFile('/actors/player.json');
 
 ```typescript
 enum RoleAction {
-    IDLE = 'idle',           // 待机
-    WALK = 'walk',           // 行走
-    SLASH = 'slash',         // 斩击
-    BACK_SLASH = 'back_slash', // 背斩
+    IDLE = 'idle',              // 待机
+    WALK = 'walk',              // 行走
+    SLASH = 'slash',            // 斩击
+    BACK_SLASH = 'back_slash',  // 背斩
+    HURT = 'hurt',              // 受伤
+    DEAD = 'dead',              // 死亡
 }
 ```
 
@@ -621,6 +1080,17 @@ enum RoleDirection {
     LEFT = 1,   // 左
     DOWN = 2,   // 下
     RIGHT = 3,  // 右
+}
+```
+
+### RoleFaction
+
+角色阵营枚举。
+
+```typescript
+enum RoleFaction {
+    HERO = 'hero',    // 英雄阵营（观众）
+    ENEMY = 'enemy',  // 敌人阵营（小兵）
 }
 ```
 
@@ -682,6 +1152,22 @@ interface ResourceManifest {
 }
 ```
 
+### LPCSheetConfig
+
+LPC 精灵表配置接口。
+
+```typescript
+interface LPCSheetConfig {
+    frameWidth: number;
+    frameHeight: number;
+    actions: Record<RoleAction, {
+        row: number;
+        frameCount: number;
+        loop: boolean;
+    }>;
+}
+```
+
 ---
 
 ## 扩展指南
@@ -740,4 +1226,20 @@ export class CustomComp extends Component {
 
 // 注册类型
 TypeRegistry.registerComponent('CustomComp', CustomComp);
+```
+
+### 创建自定义管理器
+
+```typescript
+export class CustomManager {
+    private static sInstance: CustomManager;
+    
+    static Instance(): CustomManager {
+        if (!this.sInstance)
+            this.sInstance = new CustomManager();
+        return this.sInstance;
+    }
+    
+    // 管理器方法...
+}
 ```
